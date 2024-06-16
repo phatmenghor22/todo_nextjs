@@ -12,8 +12,7 @@ export default function Home() {
   const fetchTodos = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.VERCEL_URL}/api/todo`);
-      console.log(`### ===sss${process.env.VERCEL_URL}/api/todo`);
+      const res = await fetch(`https://todo-menghor.vercel.app/api/todo`);
       const data = await res.json();
       setData(data.response);
       setLoading(false);
