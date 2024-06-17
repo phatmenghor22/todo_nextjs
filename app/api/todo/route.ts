@@ -8,6 +8,7 @@ export async function POST(req: NextRequest) {
   if (!todo) {
     return NextResponse.json(
       {
+        response: "error",
         error: "todo are required",
       },
       {
@@ -42,19 +43,34 @@ export async function POST(req: NextRequest) {
       }
     }
     return NextResponse.json(
-      { error: "Internal server error" },
+      { response: "error", error: "Internal server error" },
       { status: 500 }
     );
   }
 }
 
 export async function GET(request: NextRequest) {
-  const todo = await prisma.todo.findMany({ orderBy: { id: "asc" } });
+  const url = new URL(request.url);
+  const searchTerm = url.searchParams.get("search");
+  let whereClause = {};
+
+  if (searchTerm) {
+    whereClause = {
+      todo: {
+        contains: searchTerm, // Case-insensitive search
+        mode: "insensitive", // Optional: Explicitly set case-insensitive mode
+      },
+    };
+  }
+  const todos = await prisma.todo.findMany({
+    where: whereClause,
+    orderBy: { id: "asc" },
+  });
 
   return NextResponse.json(
     {
       response: "success",
-      data: todo,
+      data: todos,
     },
     { status: 200 }
   );

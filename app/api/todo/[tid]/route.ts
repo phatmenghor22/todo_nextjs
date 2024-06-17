@@ -22,6 +22,7 @@ export async function PUT(
   if (!body) {
     return NextResponse.json(
       {
+        response: "error",
         error: "body are required",
       },
       {
@@ -42,7 +43,7 @@ export async function PUT(
     });
   } catch (error) {
     return NextResponse.json(
-      { error: "Internal server error" },
+      { response: "error", error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -109,6 +110,7 @@ export async function DELETE(
       if (error.code === "P2025") {
         return NextResponse.json(
           {
+            response: "error",
             message: "Cannot delete todo due to related records",
           },
           { status: 400 }
@@ -117,7 +119,7 @@ export async function DELETE(
     }
 
     return NextResponse.json(
-      { error: "Internal server error" },
+      { response: "error", error: "Internal server error" },
       { status: 500 }
     );
   }
