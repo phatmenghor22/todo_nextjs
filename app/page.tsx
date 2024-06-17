@@ -1,12 +1,15 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Head from "next/head";
 import { FiSearch, FiXCircle, FiAlertCircle, FiLoader } from "react-icons/fi"; // Import icons from React Icons
 import {
   createTodoItemService,
   deleteTodoItemService,
+  editTodoItemService,
+  filterTodoService,
   getAllTodoService,
 } from "@/service/todoService";
+import debounce from "lodash/debounce";
 
 type TodoModel = {
   id: number;
@@ -17,6 +20,7 @@ type TodoModel = {
 
 const Home: React.FC = () => {
   const [todosData, setTodosData] = useState<TodoModel[]>([]);
+  const [todosFilter, setTodosFilter] = useState<TodoModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   // State for hovered todo item
   const [hoveredTodoId, setHoveredTodoId] = useState<number | null>(null);
@@ -48,6 +52,23 @@ const Home: React.FC = () => {
   // Handle filter change
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFilterText(event.target.value);
+    debouncedFetchResults(event.target.value);
+  };
+
+  const debouncedFetchResults = useMemo(
+    () => debounce((value: string) => fetchResults(value), 1000),
+    []
+  );
+
+  const fetchResults = async (value: string) => {
+    if (value.trim()) {
+      setLoading(true);
+      const resposne = await filterTodoService({ search: value });
+      setTodosFilter(resposne);
+      setLoading(false);
+    } else {
+      setTodosFilter([]);
+    }
   };
 
   // Handle form submit
@@ -68,16 +89,22 @@ const Home: React.FC = () => {
     setLoading(false);
   };
 
-  // Edit Todo
-  const editTodo = (id: number, newText: string) => {
-    if (newText.trim() === "") {
-      alert("Todo text cannot be empty");
-      return;
-    }
-  };
-
   // Toggle completion of Todo
-  const toggleTodoCompletion = (id: number) => {};
+  const toggleTodoCompletion = async (id: number, isCompleted: boolean) => {
+    setLoading(true);
+    const res = await editTodoItemService({
+      id,
+      isCompleted: !isCompleted,
+    });
+    if (res && filterText.length === 0) {
+      const response = await getAllTodoService();
+      setTodosData(response);
+    } else if (res && filterText.length > 0) {
+      const resposne = await filterTodoService({ search: filterText });
+      setTodosFilter(resposne);
+    }
+    setLoading(false);
+  };
 
   // Handle edit input change
   const handleEditInputChange = (
@@ -87,7 +114,7 @@ const Home: React.FC = () => {
   };
 
   // Handle enter key press in edit input
-  const handleEditInputKeyDown = (
+  const handleEditInputKeyDown = async (
     event: React.KeyboardEvent<HTMLInputElement>,
     id: number,
     currentText: string
@@ -95,20 +122,49 @@ const Home: React.FC = () => {
     if (event.key === "Enter") {
       event.preventDefault();
       if (editTodoText.trim() !== "") {
-        editTodo(id, editTodoText);
+        setLoading(true);
+        const res = await editTodoItemService({
+          id,
+          todo: editTodoText,
+        });
+        if (res && filterText.length === 0) {
+          const response = await getAllTodoService();
+          setTodosData(response);
+        } else if (res && filterText.length > 0) {
+          const resposne = await filterTodoService({ search: filterText });
+          setTodosFilter(resposne);
+        }
         setEditModeTodoId(null);
+        setLoading(false);
       } else {
         alert("Todo text cannot be empty");
       }
     }
   };
 
-  // Handle enter key press in edit input
+  // Handle enter key press add input
   const handleEnterInput = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
       if (newTodoText.trim() !== "") {
         addNewTodo(newTodoText);
+      } else {
+        alert("Todo text cannot be empty");
+      }
+    }
+  };
+
+  // Handle enter key press filter
+  const handleEnterFilter = async (
+    event: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (filterText.trim() !== "") {
+        setLoading(true);
+        const resposne = await filterTodoService({ search: filterText });
+        setTodosFilter(resposne);
+        setLoading(false);
       } else {
         alert("Todo text cannot be empty");
       }
@@ -132,6 +188,7 @@ const Home: React.FC = () => {
 
   // Check if todos are empty
   const isEmptyListTodos = todosData.length === 0 && !loading;
+  const isEmptyFilterTodos = todosFilter.length === 0 && !loading;
 
   const fetchData = async () => {
     setLoading(true);
@@ -172,7 +229,7 @@ const Home: React.FC = () => {
           <button
             type="submit"
             onClick={() => addNewTodo(newTodoText)}
-            className="px-4 bg-blue-500 text-white rounded-md focus:outline-none h-10"
+            className="px-4 ml-2 bg-blue-500 text-white rounded-md focus:outline-none h-10"
           >
             Add Todo
           </button>
@@ -188,8 +245,8 @@ const Home: React.FC = () => {
             value={filterText}
             onChange={handleFilterChange}
             placeholder="Search todos..."
-            onKeyDown={(e) => handleEnterInput(e)}
-            className="pl-9 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none w-full"
+            onKeyDown={(e) => handleEnterFilter(e)}
+            className="pl-10 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none w-full"
           />
           {filterText && (
             <button
@@ -202,93 +259,191 @@ const Home: React.FC = () => {
         </div>
 
         {/* Display todos */}
-        {loading ? (
-          <div className="flex items-center justify-center py-4">
-            <FiLoader className="animate-spin h-8 w-8 mr-3 text-gray-500" />
-            <span>Loading...</span>
-          </div>
-        ) : (
-          <ul className="divide-y divide-gray-200">
-            {isEmptyListTodos ? (
-              <li className="flex items-center justify-center py-4">
-                <div className="flex flex-col items-center">
-                  <FiAlertCircle className="h-10 w-10 text-gray-400 mb-2" />
-                  <p className="text-gray-500 text-sm">No todos found.</p>
-                </div>
-              </li>
-            ) : (
-              todosData.map((todo) => (
-                <li
-                  key={todo.id}
-                  className="flex items-center justify-between py-2 border-b border-gray-200"
-                  onMouseEnter={() => setHoveredTodoId(todo.id)}
-                  onMouseLeave={() => setHoveredTodoId(null)}
-                >
-                  {/* Editable input field */}
-                  {editModeTodoId === todo.id ? (
-                    <input
-                      type="text"
-                      value={editTodoText}
-                      onChange={handleEditInputChange}
-                      onKeyDown={(e) =>
-                        handleEditInputKeyDown(e, todo.id, todo.todo)
-                      }
-                      onBlur={() => setEditModeTodoId(null)}
-                      className="px-4 border border-gray-300 rounded-md focus:outline-none h-10 flex-grow"
-                    />
-                  ) : (
-                    // Display todo text with strikethrough if completed
-                    <span
-                      className={`flex-grow ${
-                        todo.isCompleted ? "line-through text-gray-500" : ""
-                      }`}
-                    >
-                      {todo.todo}
-                    </span>
-                  )}
-                  {/* Buttons for actions */}
-                  <div
-                    className={`flex space-x-2 ml-4 ${
-                      hoveredTodoId === todo.id ? "visible" : "invisible"
-                    }`}
-                  >
-                    {/* Checkbox for completion */}
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={todo.isCompleted}
-                        onChange={() => toggleTodoCompletion(todo.id)}
-                        className="form-checkbox h-5 w-5 text-blue-500"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">
-                        {todo.isCompleted
-                          ? "Mark as Incomplete"
-                          : "Mark as Complete"}
-                      </span>
-                    </label>
-                    {/* Edit button */}
-                    <button
-                      onClick={() => {
-                        setEditModeTodoId(todo.id);
-                        setEditTodoText(todo.todo);
-                      }}
-                      className="px-2 py-1 bg-yellow-500 text-white rounded-md focus:outline-none hover:bg-yellow-600"
-                    >
-                      Edit
-                    </button>
-                    {/* Remove button */}
-                    <button
-                      onClick={() => removeTodo(todo.id)}
-                      className="px-2 py-1 bg-red-500 text-white rounded-md focus:outline-none hover:bg-red-600"
-                    >
-                      Remove
-                    </button>
+        <div className={`${filterText.length > 0 ? "hidden" : "block"}`}>
+          {loading ? (
+            <div className="flex items-center justify-center py-4">
+              <FiLoader className="animate-spin h-8 w-8 mr-3 text-gray-500" />
+              <span>Loading...</span>
+            </div>
+          ) : (
+            <ul className="divide-y divide-gray-200">
+              {isEmptyListTodos ? (
+                <li className="flex items-center justify-center py-4">
+                  <div className="flex flex-col items-center">
+                    <FiAlertCircle className="h-10 w-10 text-gray-400 mb-2" />
+                    <p className="text-gray-500 text-sm">No todos found.</p>
                   </div>
                 </li>
-              ))
-            )}
-          </ul>
-        )}
+              ) : (
+                todosData.map((todo) => (
+                  <li
+                    key={todo.id}
+                    className="flex items-center justify-between py-2 border-b border-gray-200"
+                    onMouseEnter={() => setHoveredTodoId(todo.id)}
+                    onMouseLeave={() => setHoveredTodoId(null)}
+                  >
+                    {/* Editable input field */}
+                    {editModeTodoId === todo.id ? (
+                      <input
+                        type="text"
+                        value={editTodoText}
+                        onChange={handleEditInputChange}
+                        onKeyDown={(e) =>
+                          handleEditInputKeyDown(e, todo.id, todo.todo)
+                        }
+                        onBlur={() => setEditModeTodoId(null)}
+                        className="px-4 border border-gray-300 rounded-md focus:outline-none h-10 flex-grow"
+                      />
+                    ) : (
+                      // Display todo text with strikethrough if completed
+                      <span
+                        className={`flex-grow ${
+                          todo.isCompleted ? "line-through text-gray-500" : ""
+                        }`}
+                      >
+                        {todo.todo}
+                      </span>
+                    )}
+                    {/* Buttons for actions */}
+                    <div
+                      className={`flex space-x-2 ml-4 ${
+                        hoveredTodoId === todo.id ? "visible" : "invisible"
+                      }`}
+                    >
+                      {/* Checkbox for completion */}
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={todo.isCompleted}
+                          onChange={() =>
+                            toggleTodoCompletion(todo.id, todo.isCompleted)
+                          }
+                          className="form-checkbox h-5 w-5 text-blue-500"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">
+                          {todo.isCompleted
+                            ? "Mark as Incomplete"
+                            : "Mark as Complete"}
+                        </span>
+                      </label>
+                      {/* Edit button */}
+                      <button
+                        onClick={() => {
+                          setEditModeTodoId(todo.id);
+                          setEditTodoText(todo.todo);
+                        }}
+                        className="px-2 py-1 bg-yellow-500 text-white rounded-md focus:outline-none hover:bg-yellow-600"
+                      >
+                        Edit
+                      </button>
+                      {/* Remove button */}
+                      <button
+                        onClick={() => removeTodo(todo.id)}
+                        className="px-2 py-1 bg-red-500 text-white rounded-md focus:outline-none hover:bg-red-600"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </li>
+                ))
+              )}
+            </ul>
+          )}
+        </div>
+
+        <div className={`${filterText.length === 0 ? "hidden" : "block"}`}>
+          {loading ? (
+            <div className="flex items-center justify-center py-4">
+              <FiLoader className="animate-spin h-8 w-8 mr-3 text-gray-500" />
+              <span>Loading...</span>
+            </div>
+          ) : (
+            <ul className="divide-y divide-gray-200">
+              {isEmptyFilterTodos ? (
+                <li className="flex items-center justify-center py-4">
+                  <div className="flex flex-col items-center">
+                    <FiAlertCircle className="h-10 w-10 text-gray-400 mb-2" />
+                    <p className="text-gray-500 text-sm">
+                      No result. Create a new one instead!.
+                    </p>
+                  </div>
+                </li>
+              ) : (
+                todosFilter.map((todo) => (
+                  <li
+                    key={todo.id}
+                    className="flex items-center justify-between py-2 border-b border-gray-200"
+                    onMouseEnter={() => setHoveredTodoId(todo.id)}
+                    onMouseLeave={() => setHoveredTodoId(null)}
+                  >
+                    {/* Editable input field */}
+                    {editModeTodoId === todo.id ? (
+                      <input
+                        type="text"
+                        value={editTodoText}
+                        onChange={handleEditInputChange}
+                        onKeyDown={(e) =>
+                          handleEditInputKeyDown(e, todo.id, todo.todo)
+                        }
+                        onBlur={() => setEditModeTodoId(null)}
+                        className="px-4 border border-gray-300 rounded-md focus:outline-none h-10 flex-grow"
+                      />
+                    ) : (
+                      // Display todo text with strikethrough if completed
+                      <span
+                        className={`flex-grow ${
+                          todo.isCompleted ? "line-through text-gray-500" : ""
+                        }`}
+                      >
+                        {todo.todo}
+                      </span>
+                    )}
+                    {/* Buttons for actions */}
+                    <div
+                      className={`flex space-x-2 ml-4 ${
+                        hoveredTodoId === todo.id ? "visible" : "invisible"
+                      }`}
+                    >
+                      {/* Checkbox for completion */}
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={todo.isCompleted}
+                          onChange={() =>
+                            toggleTodoCompletion(todo.id, todo.isCompleted)
+                          }
+                          className="form-checkbox h-5 w-5 text-blue-500"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">
+                          {todo.isCompleted
+                            ? "Mark as Incomplete"
+                            : "Mark as Complete"}
+                        </span>
+                      </label>
+                      {/* Edit button */}
+                      <button
+                        onClick={() => {
+                          setEditModeTodoId(todo.id);
+                          setEditTodoText(todo.todo);
+                        }}
+                        className="px-2 py-1 bg-yellow-500 text-white rounded-md focus:outline-none hover:bg-yellow-600"
+                      >
+                        Edit
+                      </button>
+                      {/* Remove button */}
+                      <button
+                        onClick={() => removeTodo(todo.id)}
+                        className="px-2 py-1 bg-red-500 text-white rounded-md focus:outline-none hover:bg-red-600"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </li>
+                ))
+              )}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );

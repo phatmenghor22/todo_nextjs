@@ -23,7 +23,40 @@ export const createTodoItemService = async ({ todo = "" }) => {
       return false;
     }
   } catch (error) {
-    console.log("### ====responseerror", error);
+    return false;
+  }
+};
+
+type editTodo = {
+  id: number;
+  isCompleted?: boolean;
+  todo?: string;
+};
+
+export const editTodoItemService = async ({
+  id,
+  isCompleted,
+  todo,
+}: editTodo) => {
+  try {
+    if (typeof isCompleted === "undefined" && typeof todo === "undefined") {
+      console.log("Both isCompleted and todo are missing");
+      return false;
+    }
+    const body: Partial<editTodo> = {};
+    if (typeof todo !== "undefined") {
+      body.todo = todo;
+    }
+    if (typeof isCompleted !== "undefined") {
+      body.isCompleted = isCompleted;
+    }
+    const response = await axiosInstance.put(`/api/todo/${id}`, body);
+    if (response.status === 200) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
     return false;
   }
 };
@@ -51,7 +84,7 @@ type filterTodo = {
 
 export const filterTodoService = async ({ search = "" }: filterTodo) => {
   try {
-    const response = await axiosInstance.delete(`/api/todo?search=${search}}`);
+    const response = await axiosInstance.get(`/api/todo?search=${search}`);
     if (response.status === 200) {
       return response.data.data;
     } else {
