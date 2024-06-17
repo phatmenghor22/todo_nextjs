@@ -15,6 +15,7 @@ interface TodosListProps {
   editModeTodoId: number | null;
   hoveredTodoId: number | null;
   editTodoText: string;
+  title: string;
   isVisible: boolean;
   setHoveredTodoId: (id: number | null) => void;
   handleEditInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -27,6 +28,7 @@ interface TodosListProps {
   setEditTodoText: (text: string) => void;
   toggleTodoCompletion: (id: number, isCompleted: boolean) => void;
   removeTodo: (id: number) => void;
+  clearInput: () => void;
 }
 
 const TodosList: React.FC<TodosListProps> = ({
@@ -44,9 +46,14 @@ const TodosList: React.FC<TodosListProps> = ({
   setEditTodoText,
   toggleTodoCompletion,
   removeTodo,
+  title,
+  clearInput,
 }) => {
   return (
     <div className={`${isVisible ? "block" : "hidden"}`}>
+      <h2 className="text-xl font-bold mb-2 mt-8 underline text-blue-800">
+        {title}
+      </h2>
       {loading ? (
         <div className="flex items-center justify-center py-4">
           <FiLoader className="animate-spin h-8 w-8 mr-3 text-gray-500" />
@@ -62,17 +69,18 @@ const TodosList: React.FC<TodosListProps> = ({
               </div>
             </li>
           ) : (
-            todosData.map((todo) => (
+            todosData.map((item, index) => (
               <li
-                key={todo.id}
+                key={item.id}
                 className="flex items-center justify-between py-2 border-b border-gray-200"
-                onMouseEnter={() => setHoveredTodoId(todo.id)}
+                onMouseEnter={() => setHoveredTodoId(item.id)}
                 onMouseLeave={() => setHoveredTodoId(null)}
               >
-                {editModeTodoId === todo.id ? (
+                {editModeTodoId === item.id ? (
                   <TodoInput
+                    clearInput={clearInput}
                     handleEnterInput={(e) =>
-                      handleEditInputKeyDown(e, todo.id, todo.todo)
+                      handleEditInputKeyDown(e, item.id, item.todo)
                     }
                     handleInputChange={handleEditInputChange}
                     value={editTodoText}
@@ -81,29 +89,29 @@ const TodosList: React.FC<TodosListProps> = ({
                 ) : (
                   <span
                     className={`flex-grow ${
-                      todo.isCompleted ? "line-through text-gray-500" : ""
+                      item.isCompleted ? "line-through text-gray-500" : ""
                     }`}
                   >
-                    {todo.todo}
+                    {`${index + 1}. ${item.todo}`}
                   </span>
                 )}
 
                 <div
                   className={`flex space-x-2 ml-4 ${
-                    hoveredTodoId === todo.id ? "visible" : "invisible"
+                    hoveredTodoId === item.id ? "visible" : "invisible"
                   }`}
                 >
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={todo.isCompleted}
+                      checked={item.isCompleted}
                       onChange={() =>
-                        toggleTodoCompletion(todo.id, todo.isCompleted)
+                        toggleTodoCompletion(item.id, item.isCompleted)
                       }
                       className="form-checkbox h-5 w-5 text-blue-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">
-                      {todo.isCompleted
+                      {item.isCompleted
                         ? "Mark as Incomplete"
                         : "Mark as Complete"}
                     </span>
@@ -111,8 +119,8 @@ const TodosList: React.FC<TodosListProps> = ({
 
                   <button
                     onClick={() => {
-                      setEditModeTodoId(todo.id);
-                      setEditTodoText(todo.todo);
+                      setEditModeTodoId(item.id);
+                      setEditTodoText(item.todo);
                     }}
                     className="px-2 py-1 bg-yellow-500 text-white rounded-md focus:outline-none hover:bg-yellow-600"
                   >
@@ -120,7 +128,7 @@ const TodosList: React.FC<TodosListProps> = ({
                   </button>
 
                   <button
-                    onClick={() => removeTodo(todo.id)}
+                    onClick={() => removeTodo(item.id)}
                     className="px-2 py-1 bg-red-500 text-white rounded-md focus:outline-none hover:bg-red-600"
                   >
                     Remove

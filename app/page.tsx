@@ -184,6 +184,14 @@ const Home: React.FC = () => {
     setLoading(false);
   };
 
+  const clearInputAddTodo = () => {
+    setNewTodoText("");
+  };
+
+  const clearInputListing = () => {
+    setEditModeTodoId(null);
+  };
+
   return (
     <div className="min-h-screen bg-white text-black">
       <Head>
@@ -196,12 +204,16 @@ const Home: React.FC = () => {
       </Head>
 
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 onClick={fetchData} className="text-3xl font-bold mb-4">
+        <h1
+          onClick={fetchData}
+          className="text-3xl font-bold mb-4 text-blue-800"
+        >
           Todo List
         </h1>
 
         <div className="flex items-center rounded-md mb-4">
           <TodoInput
+            clearInput={clearInputAddTodo}
             handleEnterInput={handleEnterInput}
             handleInputChange={handleInputChange}
             value={newTodoText}
@@ -255,10 +267,13 @@ const Home: React.FC = () => {
           setEditTodoText={setEditTodoText}
           toggleTodoCompletion={toggleTodoCompletion}
           removeTodo={removeTodo}
+          title="Data Listing"
+          clearInput={clearInputListing}
         />
 
         {/* For Filter */}
         <TodosList
+          title="Data Filter"
           loading={loading}
           isEmptyListTodos={isEmptyFilterTodos}
           todosData={todosFilter}
@@ -273,6 +288,7 @@ const Home: React.FC = () => {
           setEditTodoText={setEditTodoText}
           toggleTodoCompletion={toggleTodoCompletion}
           removeTodo={removeTodo}
+          clearInput={clearInputListing}
         />
       </div>
     </div>
