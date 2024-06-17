@@ -16,6 +16,7 @@ interface TodosListProps {
   hoveredTodoId: number | null;
   editTodoText: string;
   title: string;
+  titleEmthy: string;
   isVisible: boolean;
   setHoveredTodoId: (id: number | null) => void;
   handleEditInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -27,7 +28,7 @@ interface TodosListProps {
   setEditModeTodoId: (id: number | null) => void;
   setEditTodoText: (text: string) => void;
   toggleTodoCompletion: (id: number, isCompleted: boolean) => void;
-  removeTodo: (id: number) => void;
+  removeTodo: (id: number, todo: string) => void;
   clearInput: () => void;
 }
 
@@ -48,6 +49,7 @@ const TodosList: React.FC<TodosListProps> = ({
   removeTodo,
   title,
   clearInput,
+  titleEmthy,
 }) => {
   return (
     <div className={`${isVisible ? "block" : "hidden"}`}>
@@ -65,7 +67,7 @@ const TodosList: React.FC<TodosListProps> = ({
             <li className="flex items-center justify-center py-4">
               <div className="flex flex-col items-center">
                 <FiAlertCircle className="h-10 w-10 text-gray-400 mb-2" />
-                <p className="text-gray-500 text-sm">No todos found.</p>
+                <p className="text-gray-500 text-sm">{titleEmthy}</p>
               </div>
             </li>
           ) : (
@@ -128,7 +130,7 @@ const TodosList: React.FC<TodosListProps> = ({
                   </button>
 
                   <button
-                    onClick={() => removeTodo(item.id)}
+                    onClick={() => removeTodo(item.id, item.todo)}
                     className="px-2 py-1 bg-red-500 text-white rounded-md focus:outline-none hover:bg-red-600"
                   >
                     Remove

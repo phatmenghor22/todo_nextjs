@@ -1,7 +1,7 @@
 "use client";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Head from "next/head";
-import { FiSearch, FiXCircle, FiAlertCircle, FiLoader } from "react-icons/fi";
+import { FiSearch, FiXCircle } from "react-icons/fi";
 import {
   createTodoItemService,
   deleteTodoItemService,
@@ -12,6 +12,9 @@ import {
 import debounce from "lodash/debounce";
 import TodoInput from "@/components/TextInput/TodoInput";
 import TodosList from "@/components/TodoListing/TodoListing";
+import { ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 type TodoModel = {
   id: number;
@@ -34,14 +37,6 @@ const Home: React.FC = () => {
     fetchData();
   }, []);
 
-  const addTodo = () => {
-    if (newTodoText.trim() === "") {
-      alert("Todo cannot be empty");
-      return;
-    }
-    setNewTodoText("");
-  };
-
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewTodoText(event.target.value);
   };
@@ -52,7 +47,7 @@ const Home: React.FC = () => {
   };
 
   const debouncedFetchResults = useMemo(
-    () => debounce((value: string) => fetchResults(value), 1000),
+    () => debounce((value: string) => fetchResults(value), 500),
     []
   );
 
@@ -67,17 +62,13 @@ const Home: React.FC = () => {
     }
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    addTodo();
-  };
-
-  const removeTodo = async (id: number) => {
+  const removeTodo = async (id: number, todo: string) => {
     setLoading(true);
     const response = await deleteTodoItemService({ id });
     if (response) {
       const response = await getAllTodoService();
       setTodosData(response);
+      notifySuccess(`Todo ${todo} deleted successfully!`);
     }
     setLoading(false);
   };
@@ -91,9 +82,11 @@ const Home: React.FC = () => {
     if (res && filterText.length === 0) {
       const response = await getAllTodoService();
       setTodosData(response);
+      notifySuccess(`Todo edit complete successfully!`);
     } else if (res && filterText.length > 0) {
       const resposne = await filterTodoService({ search: filterText });
       setTodosFilter(resposne);
+      notifySuccess(`Todo edit complete successfully!`);
     }
     setLoading(false);
   };
@@ -116,13 +109,14 @@ const Home: React.FC = () => {
           id,
           todo: editTodoText,
         });
-        console.log("### ==res", res);
         if (res && filterText.length === 0) {
           const response = await getAllTodoService();
           setTodosData(response);
+          notifySuccess(`Todo edit successfully!`);
         } else if (res && filterText.length > 0) {
           const resposne = await filterTodoService({ search: filterText });
           setTodosFilter(resposne);
+          notifySuccess(`Todo edit successfully!`);
         }
         setEditModeTodoId(null);
         setLoading(false);
@@ -160,14 +154,34 @@ const Home: React.FC = () => {
   };
 
   const addNewTodo = async (value: string) => {
-    setLoading(true);
-    const response = await createTodoItemService({ todo: value });
-    if (response) {
-      const response = await getAllTodoService();
-      setTodosData(response);
-      setNewTodoText("");
+    if (newTodoText.trim() !== "") {
+      setLoading(true);
+      const response = await createTodoItemService({ todo: value });
+      if (response === true) {
+        notifySuccess("Todo listing created successfully!");
+        const response = await getAllTodoService();
+        setTodosData(response);
+        setNewTodoText("");
+        setLoading(false);
+      } else {
+        setLoading(false);
+        alert(response);
+      }
+    } else {
+      alert("Todo text cannot be empty");
     }
-    setLoading(false);
+  };
+
+  const notifySuccess = (title: string) => {
+    toast.success(title, {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
   };
 
   const clearFilterText = () => {
@@ -268,12 +282,14 @@ const Home: React.FC = () => {
           toggleTodoCompletion={toggleTodoCompletion}
           removeTodo={removeTodo}
           title="Data Listing"
+          titleEmthy="No todos found."
           clearInput={clearInputListing}
         />
 
         {/* For Filter */}
         <TodosList
           title="Data Filter"
+          titleEmthy="No result. Create a new one instead!."
           loading={loading}
           isEmptyListTodos={isEmptyFilterTodos}
           todosData={todosFilter}
@@ -291,6 +307,7 @@ const Home: React.FC = () => {
           clearInput={clearInputListing}
         />
       </div>
+      <ToastContainer />
     </div>
   );
 };

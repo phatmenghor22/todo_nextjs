@@ -30,13 +30,13 @@ export async function POST(req: NextRequest) {
       data: newTodo,
     });
   } catch (error) {
-    console.error("Error creating todo:", error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
         return NextResponse.json(
           {
             response: "error",
-            message: "A todo with this title already exists",
+            message:
+              "A todo with this text already exists please Input new text",
           },
           { status: 409 }
         );
@@ -57,8 +57,8 @@ export async function GET(request: NextRequest) {
   if (searchTerm) {
     whereClause = {
       todo: {
-        contains: searchTerm, // Case-insensitive search
-        mode: "insensitive", // Optional: Explicitly set case-insensitive mode
+        contains: searchTerm,
+        mode: "insensitive",
       },
     };
   }

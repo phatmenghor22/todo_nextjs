@@ -1,4 +1,5 @@
 import axiosInstance from "@/lib/axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 
 export const getAllTodoService = async () => {
   try {
@@ -19,11 +20,11 @@ export const createTodoItemService = async ({ todo = "" }) => {
     const response = await axiosInstance.post("/api/todo", body);
     if (response.status === 200) {
       return true;
-    } else {
-      return false;
     }
-  } catch (error) {
-    return false;
+  } catch (error: any) {
+    if (error.response) {
+      return error.response.data.message ?? "Server Error";
+    }
   }
 };
 
