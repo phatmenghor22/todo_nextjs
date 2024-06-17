@@ -53,7 +53,7 @@ const TodosList: React.FC<TodosListProps> = ({
 }) => {
   return (
     <div className={`${isVisible ? "block" : "hidden"}`}>
-      <h2 className="text-xl font-bold mb-2 mt-8 underline text-blue-800">
+      <h2 className="text-xl font-semibold mb-2 mt-8  text-blue-300">
         {title}
       </h2>
       {loading ? (

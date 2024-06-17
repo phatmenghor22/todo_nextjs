@@ -58,7 +58,10 @@ const Home: React.FC = () => {
       setTodosFilter(resposne);
       setLoading(false);
     } else {
-      setTodosFilter([]);
+      setLoading(true);
+      const response = await getAllTodoService();
+      setTodosData(response);
+      setLoading(false);
     }
   };
 
@@ -184,8 +187,12 @@ const Home: React.FC = () => {
     });
   };
 
-  const clearFilterText = () => {
+  const clearFilterText = async () => {
     setFilterText("");
+    setLoading(true);
+    const response = await getAllTodoService();
+    setTodosData(response);
+    setLoading(false);
   };
 
   const isEmptyListTodos = todosData.length === 0 && !loading;
