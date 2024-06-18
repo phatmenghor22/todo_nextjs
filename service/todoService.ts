@@ -18,6 +18,7 @@ export const createTodoItemService = async ({ todo = "" }: createTodo) => {
   try {
     const body = { todo };
     const response = await axiosInstance.post("/api/todo", body);
+    console.log("### ===response", response);
     return response.status === 200;
   } catch (error: any) {
     console.log(" ### ====error", error);
