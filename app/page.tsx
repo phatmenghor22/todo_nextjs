@@ -15,13 +15,7 @@ import TodosList from "@/components/TodoListing/TodoListing";
 import { ToastContainer } from "react-toastify";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-type TodoModel = {
-  id: number;
-  todo: string;
-  isCompleted: boolean;
-  createdAt: string;
-};
+import { TodoModel } from "@/typeModel/TodoType";
 
 const Home: React.FC = () => {
   const [todosData, setTodosData] = useState<TodoModel[]>([]);
@@ -32,8 +26,8 @@ const Home: React.FC = () => {
   const [newTodoText, setNewTodoText] = useState<string>("");
   const [editTodoText, setEditTodoText] = useState<string>("");
   const [filterText, setFilterText] = useState<string>("");
-  const isEmptyListTodos = todosData.length === 0 && !loading;
-  const isEmptyFilterTodos = todosFilter.length === 0 && !loading;
+  const isEmptyListTodos = todosData.length === 0;
+  const isEmptyFilterTodos = todosFilter.length === 0;
 
   useEffect(() => {
     fetchData();
