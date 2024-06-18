@@ -12,15 +12,11 @@ interface ErrorResponse {
   message: string;
 }
 
-export const handleSuccess = <T>(
-  data: T,
-  message = "Request successful",
-  status = 200
-) => {
+export const handleSuccess = <T>(data: T, message = "", status = 200) => {
   return NextResponse.json<SuccessResponse<T>>(
     {
       response: "success",
-      message,
+      message: `${message} successful`,
       data,
     },
     { status }
@@ -43,7 +39,7 @@ export const handleError = (error: unknown) => {
         return NextResponse.json<ErrorResponse>(
           {
             response: "error",
-            message: "Todo not found",
+            message: "Todo not foundssss",
           },
           { status: 404 }
         );

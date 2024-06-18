@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
         isCompleted: false,
       },
     });
-    return handleSuccess(newTodo);
+    return handleSuccess(newTodo, "Create todo");
   } catch (error) {
     return handleError(error);
   }
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       orderBy: { id: "asc" },
     });
 
-    return handleSuccess(todos);
+    return handleSuccess(todos, "Get todo");
   } catch (error) {
     return handleError(error);
   }

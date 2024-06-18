@@ -1,6 +1,5 @@
-import { useRouter } from "next/router";
-import { NextResponse, NextRequest } from "next/server";
-import { Prisma, prisma } from "@/lib/prisma";
+import { NextRequest } from "next/server";
+import { prisma } from "@/lib/prisma";
 import {
   handleError,
   handleSuccess,
@@ -27,7 +26,7 @@ export async function PUT(
       data: body,
       where: { id: parseInt(tid) },
     });
-    return handleSuccess(updatedTodo);
+    return handleSuccess(updatedTodo, `Updated todo ${tid}`);
   } catch (error) {
     return handleError(error);
   }
@@ -53,7 +52,7 @@ export async function GET(
     if (!todo) {
       return handleValidationError("Todo not found", 404);
     }
-    return handleSuccess(todo);
+    return handleSuccess(todo, `Get todo ${tid}`);
   } catch (error) {
     return handleError(error);
   }
@@ -74,7 +73,7 @@ export async function DELETE(
       where: { id: parseInt(tid) },
     });
 
-    return handleSuccess(deletedTodo);
+    return handleSuccess(deletedTodo, `Deleted todo ${tid}`);
   } catch (error) {
     return handleError(error);
   }
