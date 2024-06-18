@@ -48,30 +48,28 @@ const Home: React.FC = () => {
   );
 
   const fetchResults = async (value: string) => {
+    setLoading(true);
     if (value.trim() !== "") {
-      setLoading(true);
       const resposne = await filterTodoService({ search: value });
       setTodosFilter(resposne);
-      setLoading(false);
     } else {
-      setLoading(true);
       const response = await getAllTodoService();
       setTodosData(response);
       setTodosFilter([]);
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const removeTodo = async (id: number, todo: string) => {
     setLoading(true);
-    const res = await deleteTodoItemService({ id });
-    if (res && filterText.length === 0) {
-      const response = await getAllTodoService();
-      setTodosData(response);
+    const response = await deleteTodoItemService({ id });
+    if (response && filterText.length === 0) {
+      const data = await getAllTodoService();
+      setTodosData(data);
       notifySuccess(`Todo ${todo} deleted successfully!`);
-    } else if (res && filterText.length > 0) {
-      const resposne = await filterTodoService({ search: filterText });
-      setTodosFilter(resposne);
+    } else if (response && filterText.length > 0) {
+      const data = await filterTodoService({ search: filterText });
+      setTodosFilter(data);
       notifySuccess(`Todo ${todo} deleted successfully!`);
     }
     setLoading(false);
@@ -79,17 +77,17 @@ const Home: React.FC = () => {
 
   const toggleTodoCompletion = async (id: number, isCompleted: boolean) => {
     setLoading(true);
-    const res = await editTodoItemService({
+    const response = await editTodoItemService({
       id,
       isCompleted: !isCompleted,
     });
-    if (res && filterText.length === 0) {
-      const response = await getAllTodoService();
-      setTodosData(response);
+    if (response && filterText.length === 0) {
+      const data = await getAllTodoService();
+      setTodosData(data);
       notifySuccess(`Todo edit complete successfully!`);
-    } else if (res && filterText.length > 0) {
-      const resposne = await filterTodoService({ search: filterText });
-      setTodosFilter(resposne);
+    } else if (response && filterText.length > 0) {
+      const data = await filterTodoService({ search: filterText });
+      setTodosFilter(data);
       notifySuccess(`Todo edit complete successfully!`);
     }
     setLoading(false);
@@ -109,20 +107,20 @@ const Home: React.FC = () => {
       event.preventDefault();
       if (editTodoText.trim() !== "") {
         setLoading(true);
-        const res = await editTodoItemService({
+        const response = await editTodoItemService({
           id,
           todo: editTodoText,
         });
-        if (res === true && filterText.length === 0) {
-          const response = await getAllTodoService();
-          setTodosData(response);
+        if (response === true && filterText.length === 0) {
+          const data = await getAllTodoService();
+          setTodosData(data);
           notifySuccess(`Todo edit successfully!`);
-        } else if (res === true && filterText.length > 0) {
-          const resposne = await filterTodoService({ search: filterText });
-          setTodosFilter(resposne);
+        } else if (response === true && filterText.length > 0) {
+          const data = await filterTodoService({ search: filterText });
+          setTodosFilter(data);
           notifySuccess(`Todo edit successfully!`);
         } else {
-          alert(res);
+          alert(response);
         }
         setEditModeTodoId(null);
         setLoading(false);
@@ -167,8 +165,8 @@ const Home: React.FC = () => {
         const response = await getAllTodoService();
         setTodosData(response);
         setNewTodoText("");
-        notifySuccess("Todo listing created successfully!");
         setLoading(false);
+        notifySuccess("Todo listing created successfully!");
       } else {
         setLoading(false);
         alert(response);
