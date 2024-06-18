@@ -32,6 +32,8 @@ const Home: React.FC = () => {
   const [newTodoText, setNewTodoText] = useState<string>("");
   const [editTodoText, setEditTodoText] = useState<string>("");
   const [filterText, setFilterText] = useState<string>("");
+  const isEmptyListTodos = todosData.length === 0 && !loading;
+  const isEmptyFilterTodos = todosFilter.length === 0 && !loading;
 
   useEffect(() => {
     fetchData();
@@ -67,10 +69,14 @@ const Home: React.FC = () => {
 
   const removeTodo = async (id: number, todo: string) => {
     setLoading(true);
-    const response = await deleteTodoItemService({ id });
-    if (response) {
+    const res = await deleteTodoItemService({ id });
+    if (res && filterText.length === 0) {
       const response = await getAllTodoService();
       setTodosData(response);
+      notifySuccess(`Todo ${todo} deleted successfully!`);
+    } else if (res && filterText.length > 0) {
+      const resposne = await filterTodoService({ search: filterText });
+      setTodosFilter(resposne);
       notifySuccess(`Todo ${todo} deleted successfully!`);
     }
     setLoading(false);
@@ -112,15 +118,16 @@ const Home: React.FC = () => {
           id,
           todo: editTodoText,
         });
-        if (res && filterText.length === 0) {
+        if (res === true && filterText.length === 0) {
           const response = await getAllTodoService();
           setTodosData(response);
           notifySuccess(`Todo edit successfully!`);
-        } else if (res && filterText.length > 0) {
+        } else if (res === true && filterText.length > 0) {
           const resposne = await filterTodoService({ search: filterText });
           setTodosFilter(resposne);
           notifySuccess(`Todo edit successfully!`);
         }
+        alert(res);
         setEditModeTodoId(null);
         setLoading(false);
       } else {
@@ -194,9 +201,6 @@ const Home: React.FC = () => {
     setTodosData(response);
     setLoading(false);
   };
-
-  const isEmptyListTodos = todosData.length === 0 && !loading;
-  const isEmptyFilterTodos = todosFilter.length === 0 && !loading;
 
   const fetchData = async () => {
     setLoading(true);

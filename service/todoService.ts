@@ -1,30 +1,27 @@
 import axiosInstance from "@/lib/axios";
+import handleAxiosError from "@/lib/handleAxios";
 import axios, { AxiosError, AxiosResponse } from "axios";
 
 export const getAllTodoService = async () => {
   try {
     const response = await axiosInstance.get("/api/todo");
-    if (response.status === 200) {
-      return response.data.data;
-    } else {
-      return [];
-    }
+    return response.data.data;
   } catch (error) {
     return [];
   }
 };
 
-export const createTodoItemService = async ({ todo = "" }) => {
+type createTodo = {
+  todo: string;
+};
+export const createTodoItemService = async ({ todo = "" }: createTodo) => {
   try {
     const body = { todo };
     const response = await axiosInstance.post("/api/todo", body);
-    if (response.status === 200) {
-      return true;
-    }
+    return response.status === 200;
   } catch (error: any) {
-    if (error.response) {
-      return error.response.data.message ?? "Server Error";
-    }
+    console.log(" ### ====error", error);
+    return Error(handleAxiosError(error));
   }
 };
 
@@ -40,11 +37,11 @@ export const editTodoItemService = async ({
   todo,
 }: editTodo) => {
   try {
-    if (typeof isCompleted === "undefined" && typeof todo === "undefined") {
-      console.log("Both isCompleted and todo are missing");
+    if (!id || (!isCompleted && !todo)) {
       return false;
     }
     const body: Partial<editTodo> = {};
+
     if (typeof todo !== "undefined") {
       body.todo = todo;
     }
@@ -52,13 +49,9 @@ export const editTodoItemService = async ({
       body.isCompleted = isCompleted;
     }
     const response = await axiosInstance.put(`/api/todo/${id}`, body);
-    if (response.status === 200) {
-      return true;
-    } else {
-      return false;
-    }
-  } catch (error) {
-    return false;
+    return response.status === 200;
+  } catch (error: any) {
+    return Error(handleAxiosError(error));
   }
 };
 
@@ -69,11 +62,7 @@ type deleteTodo = {
 export const deleteTodoItemService = async ({ id }: deleteTodo) => {
   try {
     const response = await axiosInstance.delete(`/api/todo/${id}`);
-    if (response.status === 200) {
-      return true;
-    } else {
-      return false;
-    }
+    return response.status === 200;
   } catch (error) {
     return false;
   }
@@ -86,11 +75,7 @@ type filterTodo = {
 export const filterTodoService = async ({ search = "" }: filterTodo) => {
   try {
     const response = await axiosInstance.get(`/api/todo?search=${search}`);
-    if (response.status === 200) {
-      return response.data.data;
-    } else {
-      return [];
-    }
+    return response.data.data;
   } catch (error) {
     return [];
   }
