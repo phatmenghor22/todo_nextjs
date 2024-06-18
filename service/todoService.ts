@@ -1,6 +1,5 @@
 import axiosInstance from "@/lib/axios";
 import handleAxiosError from "@/lib/handleAxios";
-import axios, { AxiosError, AxiosResponse } from "axios";
 
 export const getAllTodoService = async () => {
   try {
@@ -18,10 +17,8 @@ export const createTodoItemService = async ({ todo = "" }: createTodo) => {
   try {
     const body = { todo };
     const response = await axiosInstance.post("/api/todo", body);
-    console.log("### ===response", response);
     return response.status === 200;
   } catch (error: any) {
-    console.log(" ### ====error", error);
     return Error(handleAxiosError(error));
   }
 };
@@ -31,14 +28,14 @@ type editTodo = {
   isCompleted?: boolean;
   todo?: string;
 };
-
 export const editTodoItemService = async ({
   id,
   isCompleted,
   todo,
 }: editTodo) => {
   try {
-    if (!id || (!isCompleted && !todo)) {
+    if (typeof isCompleted === "undefined" && typeof todo === "undefined") {
+      console.log("Both isCompleted and todo are missing");
       return false;
     }
     const body: Partial<editTodo> = {};
@@ -46,20 +43,23 @@ export const editTodoItemService = async ({
     if (typeof todo !== "undefined") {
       body.todo = todo;
     }
+
     if (typeof isCompleted !== "undefined") {
       body.isCompleted = isCompleted;
     }
+
     const response = await axiosInstance.put(`/api/todo/${id}`, body);
     return response.status === 200;
   } catch (error: any) {
-    return Error(handleAxiosError(error));
+    if (error.response) {
+      return error.response.data.message ?? "Server Error";
+    }
   }
 };
 
 type deleteTodo = {
   id: number;
 };
-
 export const deleteTodoItemService = async ({ id }: deleteTodo) => {
   try {
     const response = await axiosInstance.delete(`/api/todo/${id}`);
@@ -72,7 +72,6 @@ export const deleteTodoItemService = async ({ id }: deleteTodo) => {
 type filterTodo = {
   search: string;
 };
-
 export const filterTodoService = async ({ search = "" }: filterTodo) => {
   try {
     const response = await axiosInstance.get(`/api/todo?search=${search}`);

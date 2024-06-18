@@ -48,7 +48,7 @@ const Home: React.FC = () => {
   );
 
   const fetchResults = async (value: string) => {
-    if (value.trim()) {
+    if (value.trim() !== "") {
       setLoading(true);
       const resposne = await filterTodoService({ search: value });
       setTodosFilter(resposne);
@@ -57,6 +57,7 @@ const Home: React.FC = () => {
       setLoading(true);
       const response = await getAllTodoService();
       setTodosData(response);
+      setTodosFilter([]);
       setLoading(false);
     }
   };
@@ -120,8 +121,9 @@ const Home: React.FC = () => {
           const resposne = await filterTodoService({ search: filterText });
           setTodosFilter(resposne);
           notifySuccess(`Todo edit successfully!`);
+        } else {
+          alert(res);
         }
-        alert(res);
         setEditModeTodoId(null);
         setLoading(false);
       } else {
@@ -162,10 +164,10 @@ const Home: React.FC = () => {
       setLoading(true);
       const response = await createTodoItemService({ todo: value });
       if (response === true) {
-        notifySuccess("Todo listing created successfully!");
         const response = await getAllTodoService();
         setTodosData(response);
         setNewTodoText("");
+        notifySuccess("Todo listing created successfully!");
         setLoading(false);
       } else {
         setLoading(false);
@@ -189,10 +191,11 @@ const Home: React.FC = () => {
   };
 
   const clearFilterText = async () => {
-    setFilterText("");
     setLoading(true);
+    setFilterText("");
     const response = await getAllTodoService();
     setTodosData(response);
+    setTodosFilter([]);
     setLoading(false);
   };
 
