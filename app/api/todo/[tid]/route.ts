@@ -1,51 +1,35 @@
 import { useRouter } from "next/router";
 import { NextResponse, NextRequest } from "next/server";
 import { Prisma, prisma } from "@/lib/prisma";
+import {
+  handleError,
+  handleSuccess,
+  handleValidationError,
+} from "@/lib/responseHandler";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { tid: string } }
 ) {
-  const { tid } = params;
-  const body = await request.json();
-
-  if (!tid) {
-    return NextResponse.json(
-      {
-        response: "success",
-        message: "todo ID is required",
-      },
-      { status: 400 }
-    );
-  }
-
-  if (!body) {
-    return NextResponse.json(
-      {
-        response: "error",
-        error: "body are required",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
   try {
-    const newTodo = await prisma.todo.update({
+    const { tid } = params;
+    const body = await request.json();
+
+    if (!tid || isNaN(parseInt(tid))) {
+      return handleValidationError("Valid todo ID is required");
+    }
+
+    if (!body) {
+      return handleValidationError("Request body is required");
+    }
+
+    const updatedTodo = await prisma.todo.update({
       data: body,
       where: { id: parseInt(tid) },
     });
-
-    return NextResponse.json({
-      response: "success",
-      data: newTodo,
-    });
+    return handleSuccess(updatedTodo);
   } catch (error) {
-    return NextResponse.json(
-      { response: "error", error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleError(error);
   }
 }
 
@@ -53,74 +37,45 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { tid: string } }
 ) {
-  const { tid } = params;
+  try {
+    const { tid } = params;
 
-  if (!tid) {
-    return NextResponse.json(
-      {
-        response: "success",
-        message: "User ID is required",
+    if (!tid || isNaN(parseInt(tid))) {
+      return handleValidationError("Valid todo ID is required");
+    }
+
+    const todo = await prisma.todo.findUnique({
+      where: {
+        id: parseInt(tid),
       },
-      { status: 400 }
-    );
+    });
+
+    if (!todo) {
+      return handleValidationError("Todo not found", 404);
+    }
+    return handleSuccess(todo);
+  } catch (error) {
+    return handleError(error);
   }
-
-  const todo = await prisma.todo.findUnique({
-    where: {
-      id: parseInt(tid),
-    },
-  });
-
-  return NextResponse.json(
-    {
-      response: "success",
-      data: todo,
-    },
-    { status: 200 }
-  );
 }
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { tid: string } }
 ) {
-  const { tid } = params;
-
-  if (!tid) {
-    return NextResponse.json(
-      {
-        response: "success",
-        message: "todo ID is required",
-      },
-      { status: 400 }
-    );
-  }
-
   try {
-    const newTodo = await prisma.todo.delete({
+    const { tid } = params;
+
+    if (!tid || isNaN(parseInt(tid))) {
+      return handleValidationError("Valid todo ID is required");
+    }
+
+    const deletedTodo = await prisma.todo.delete({
       where: { id: parseInt(tid) },
     });
 
-    return NextResponse.json({
-      response: "success",
-      data: newTodo,
-    });
+    return handleSuccess(deletedTodo);
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2025") {
-        return NextResponse.json(
-          {
-            response: "error",
-            message: "Cannot delete todo due to related records",
-          },
-          { status: 400 }
-        );
-      }
-    }
-
-    return NextResponse.json(
-      { response: "error", error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleError(error);
   }
 }
