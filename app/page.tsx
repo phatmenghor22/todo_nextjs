@@ -248,7 +248,7 @@ const Home: React.FC = () => {
           </button>
         </div>
 
-        <p>{process.env.VERCEL_URL}</p>
+        <p>{process.env.BASE_URL}</p>
 
         {/* Input for filtering todos */}
         <div className="relative mb-4">
