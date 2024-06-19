@@ -179,7 +179,7 @@ const Home: React.FC = () => {
   const notifySuccess = (title: string) => {
     toast.success(title, {
       position: "top-right",
-      autoClose: 3000,
+      autoClose: 2500,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
