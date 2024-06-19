@@ -248,8 +248,6 @@ const Home: React.FC = () => {
           </button>
         </div>
 
-        <p>{process.env.BASE_URL}</p>
-
         {/* Input for filtering todos */}
         <div className="relative mb-4">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
