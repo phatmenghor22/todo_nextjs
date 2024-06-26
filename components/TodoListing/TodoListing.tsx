@@ -46,6 +46,7 @@ const TodosList: React.FC<TodosListProps> = ({
   title,
   titleEmthy,
 }) => {
+  // When loading
   const renderLoadingState = () => (
     <div className="flex items-center justify-center py-4">
       <FiLoader className="animate-spin h-8 w-8 mr-3 text-gray-500" />
@@ -53,6 +54,7 @@ const TodosList: React.FC<TodosListProps> = ({
     </div>
   );
 
+  // Emthy Data
   const renderEmptyState = () => (
     <li className="flex items-center justify-center py-4">
       <div className="flex flex-col items-center">
@@ -62,6 +64,7 @@ const TodosList: React.FC<TodosListProps> = ({
     </li>
   );
 
+  // Data Not Emthy And Display
   const renderTodoItem = (item: TodoModel, index: number) => (
     <li
       key={item.id}
@@ -85,7 +88,7 @@ const TodosList: React.FC<TodosListProps> = ({
             item.isCompleted ? "line-through text-gray-500" : ""
           }`}
         >
-          {`${index + 1}. ${item.todo}`}
+          {`${item.id}. ${item.todo}`}
         </span>
       )}
 
