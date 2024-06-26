@@ -6,6 +6,7 @@ import {
   handleValidationError,
 } from "@/lib/responseHandler";
 
+/* api/todo/${ID} METHOD POT for update TODO by ID */
 export async function PUT(
   request: NextRequest,
   { params }: { params: { tid: string } }
@@ -32,6 +33,7 @@ export async function PUT(
   }
 }
 
+/* api/todo/${ID} METHOD GET for get TODO by ID */
 export async function GET(
   request: NextRequest,
   { params }: { params: { tid: string } }
@@ -58,6 +60,7 @@ export async function GET(
   }
 }
 
+/* api/todo/${ID} METHOD DELETE for delete TODO by ID in DB */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { tid: string } }

@@ -12,6 +12,7 @@ interface ErrorResponse {
   message: string;
 }
 
+// Handle message when success
 export const handleSuccess = <T>(data: T, message = "", status = 200) => {
   return NextResponse.json<SuccessResponse<T>>(
     {
@@ -23,6 +24,7 @@ export const handleSuccess = <T>(data: T, message = "", status = 200) => {
   );
 };
 
+// Handle message when catch error
 export const handleError = (error: unknown) => {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
@@ -56,6 +58,7 @@ export const handleError = (error: unknown) => {
   );
 };
 
+// Handle message when valieation by query
 export const handleValidationError = (message: string, status = 400) => {
   return NextResponse.json<ErrorResponse>(
     {

@@ -64,7 +64,7 @@ const TodosList: React.FC<TodosListProps> = ({
     </li>
   );
 
-  // Data Not Emthy And Display
+  // Data Not Emthy And then Display
   const renderTodoItem = (item: TodoModel, index: number) => (
     <li
       key={item.id}
@@ -72,6 +72,7 @@ const TodosList: React.FC<TodosListProps> = ({
       onMouseEnter={() => setHoveredTodoId(item.id)}
       onMouseLeave={() => setHoveredTodoId(null)}
     >
+      {/* When press edit show textInput */}
       {editModeTodoId === item.id ? (
         <TodoInput
           clearInput={clearInput}
@@ -92,6 +93,7 @@ const TodosList: React.FC<TodosListProps> = ({
         </span>
       )}
 
+      {/* When over mouse show */}
       <div
         className={`flex space-x-2 ml-4 ${
           hoveredTodoId === item.id ? "visible" : "invisible"

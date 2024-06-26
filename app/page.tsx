@@ -33,20 +33,36 @@ const Home: React.FC = () => {
     fetchData();
   }, []);
 
+  /* fetch data first */
+  const fetchData = async () => {
+    setLoading(true);
+    const response = await getAllTodoService();
+    setTodosData(response);
+    setLoading(false);
+  };
+
+  // create textInput set onChange
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewTodoText(event.target.value);
   };
 
+  // filter textInput set onChange
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFilterText(event.target.value);
     debouncedFetchResults(event.target.value);
+  };
+
+  /* when edit data set */
+  const handleEditInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setEditTodoText(event.target.value);
   };
 
   const debouncedFetchResults = useMemo(
     () => debounce((value: string) => fetchResults(value), 500),
     []
   );
-
   const fetchResults = async (value: string) => {
     setLoading(true);
     if (value.trim() !== "") {
@@ -60,6 +76,7 @@ const Home: React.FC = () => {
     setLoading(false);
   };
 
+  /* when press delete */
   const removeTodo = async (id: number, todo: string) => {
     setLoading(true);
     const response = await deleteTodoItemService({ id });
@@ -75,30 +92,27 @@ const Home: React.FC = () => {
     setLoading(false);
   };
 
+  /* when edit tris checkbox data todo */
   const toggleTodoCompletion = async (id: number, isCompleted: boolean) => {
     setLoading(true);
     const response = await editTodoItemService({
       id,
       isCompleted: !isCompleted,
     });
+
     if (response && filterText.length === 0) {
       const data = await getAllTodoService();
       setTodosData(data);
-      notifySuccess(`Todo edit complete successfully!`);
+      notifySuccess(`Todo edit completed successfully!`);
     } else if (response && filterText.length > 0) {
       const data = await filterTodoService({ search: filterText });
       setTodosFilter(data);
-      notifySuccess(`Todo edit complete successfully!`);
+      notifySuccess(`Todo edit completed successfully!`);
     }
     setLoading(false);
   };
 
-  const handleEditInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setEditTodoText(event.target.value);
-  };
-
+  /* when edit textInput data todo */
   const handleEditInputKeyDown = async (
     event: React.KeyboardEvent<HTMLInputElement>,
     id: number
@@ -111,17 +125,19 @@ const Home: React.FC = () => {
           id,
           todo: editTodoText,
         });
+
         if (response === true && filterText.length === 0) {
           const data = await getAllTodoService();
           setTodosData(data);
-          notifySuccess(`Todo edit successfully!`);
+          notifySuccess(`Todo edit completed successfully!`);
         } else if (response === true && filterText.length > 0) {
           const data = await filterTodoService({ search: filterText });
           setTodosFilter(data);
-          notifySuccess(`Todo edit successfully!`);
+          notifySuccess(`Todo edit completed successfully!`);
         } else {
           alert(response);
         }
+
         setEditModeTodoId(null);
         setLoading(false);
       } else {
@@ -130,6 +146,7 @@ const Home: React.FC = () => {
     }
   };
 
+  /* when create new textInput enter */
   const handleEnterInput = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
@@ -141,6 +158,7 @@ const Home: React.FC = () => {
     }
   };
 
+  /* when textInput filter enter */
   const handleEnterFilter = async (
     event: React.KeyboardEvent<HTMLInputElement>
   ) => {
@@ -157,6 +175,7 @@ const Home: React.FC = () => {
     }
   };
 
+  /* when click btn new TODO */
   const addNewTodo = async (value: string) => {
     if (newTodoText.trim() !== "") {
       setLoading(true);
@@ -188,6 +207,7 @@ const Home: React.FC = () => {
     });
   };
 
+  /* when click btn clear filter */
   const clearFilterText = async () => {
     setLoading(true);
     setFilterText("");
@@ -197,17 +217,12 @@ const Home: React.FC = () => {
     setLoading(false);
   };
 
-  const fetchData = async () => {
-    setLoading(true);
-    const response = await getAllTodoService();
-    setTodosData(response);
-    setLoading(false);
-  };
-
+  /* when click btn clear add new */
   const clearInputAddTodo = () => {
     setNewTodoText("");
   };
 
+  /* when clear edit listing */
   const clearInputListing = () => {
     setEditModeTodoId(null);
   };
@@ -224,13 +239,9 @@ const Home: React.FC = () => {
       </Head>
 
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1
-          onClick={fetchData}
-          className="text-3xl font-bold mb-4 text-blue-800"
-        >
-          Todo List
-        </h1>
+        <h1 className="text-3xl font-bold mb-4 text-blue-800">Todo List</h1>
 
+        {/* textInput for create new Todo */}
         <div className="flex items-center rounded-md mb-4">
           <TodoInput
             clearInput={clearInputAddTodo}
@@ -248,7 +259,7 @@ const Home: React.FC = () => {
           </button>
         </div>
 
-        {/* Input for filtering todos */}
+        {/* textInput for filter data Todo */}
         <div className="relative mb-4">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <FiSearch className="h-5 w-5 text-gray-400" />
@@ -271,8 +282,10 @@ const Home: React.FC = () => {
           )}
         </div>
 
-        {/* For Listing */}
+        {/* For Listing without filter */}
         <TodosList
+          title="Data Listing"
+          titleEmthy="No todos found."
           loading={loading}
           isEmptyListTodos={isEmptyListTodos}
           todosData={todosData}
@@ -287,12 +300,10 @@ const Home: React.FC = () => {
           setEditTodoText={setEditTodoText}
           toggleTodoCompletion={toggleTodoCompletion}
           removeTodo={removeTodo}
-          title="Data Listing"
-          titleEmthy="No todos found."
           clearInput={clearInputListing}
         />
 
-        {/* For Filter */}
+        {/* For Filter show */}
         <TodosList
           title="Data Filter"
           titleEmthy="No result. Create a new one instead!."
@@ -313,6 +324,7 @@ const Home: React.FC = () => {
           clearInput={clearInputListing}
         />
       </div>
+      {/* render toast message */}
       <ToastContainer />
     </div>
   );

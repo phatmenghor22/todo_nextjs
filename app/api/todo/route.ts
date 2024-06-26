@@ -6,6 +6,7 @@ import {
   handleValidationError,
 } from "@/lib/responseHandler";
 
+/* api/todo METHOD POST for create new TODO */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -29,6 +30,10 @@ export async function POST(req: NextRequest) {
   }
 }
 
+/* 
+  api/todo METHOD GET for get all TODO 
+  api/todo?search=${param} METHOD GET for get all filter TODO 
+*/
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);

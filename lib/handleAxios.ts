@@ -4,6 +4,7 @@ interface AxiosErrorMessage {
   message: string;
 }
 
+// Handle message when catch in axios
 const handleAxiosError = (error: AxiosError<AxiosErrorMessage>): string => {
   const { response, request } = error;
 
