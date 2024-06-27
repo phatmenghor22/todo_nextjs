@@ -44,13 +44,13 @@ export async function GET(request: NextRequest) {
       whereClause = {
         todo: {
           contains: searchTerm,
-          mode: "insensitive",
+          // mode: "insensitive",
         },
       };
     }
     const todos = await prisma.todo.findMany({
       where: whereClause,
-      orderBy: { id: "asc" },
+      orderBy: { id: "asc" }, // Sorting by ID in ascending order
     });
 
     return handleSuccess(todos, "Get todo");
