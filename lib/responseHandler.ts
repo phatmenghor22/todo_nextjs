@@ -41,7 +41,7 @@ export const handleError = (error: unknown) => {
         return NextResponse.json<ErrorResponse>(
           {
             response: "error",
-            message: "Todo not foundssss",
+            message: "Todo with ID does not exist.",
           },
           { status: 404 }
         );
