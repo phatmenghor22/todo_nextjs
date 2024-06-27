@@ -10,7 +10,7 @@ import {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { todo } = body;
+    const { todo, isCompleted } = body;
 
     if (!todo || typeof todo !== "string" || todo.trim().length === 0) {
       return handleValidationError(
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     const newTodo = await prisma.todo.create({
       data: {
         todo,
-        isCompleted: false,
+        isCompleted: typeof isCompleted === "boolean" ? isCompleted : false,
       },
     });
     return handleSuccess(newTodo, "Create todo");
