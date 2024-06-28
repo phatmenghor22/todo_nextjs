@@ -68,7 +68,9 @@ const TodosList: React.FC<TodosListProps> = ({
   const renderTodoItem = (item: TodoModel, index: number) => (
     <li
       key={item.id}
-      className="flex items-center justify-between py-2 border-b border-gray-200"
+      className={`flex items-center justify-between py-2 border-b border-gray-20 ${
+        editModeTodoId === item.id && "bg-red-400"
+      }`}
       onMouseEnter={() => setHoveredTodoId(item.id)}
       onMouseLeave={() => setHoveredTodoId(null)}
     >
@@ -112,6 +114,7 @@ const TodosList: React.FC<TodosListProps> = ({
         </label>
 
         <button
+          disabled={item.isCompleted}
           onClick={() => {
             setEditModeTodoId(item.id);
             setEditTodoText(item.todo);

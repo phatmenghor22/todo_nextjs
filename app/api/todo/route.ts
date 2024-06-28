@@ -10,13 +10,15 @@ import {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { todo, isCompleted } = body;
+    let { todo, isCompleted } = body;
 
     if (!todo || typeof todo !== "string" || todo.trim().length === 0) {
       return handleValidationError(
         "Todo text is required and must be a non-empty string"
       );
     }
+
+    todo = todo.trim();
 
     const newTodo = await prisma.todo.create({
       data: {
@@ -44,14 +46,16 @@ export async function GET(request: NextRequest) {
       whereClause = {
         todo: {
           contains: searchTerm,
-          // mode: "insensitive",
+          mode: "insensitive",
         },
       };
     }
-    const todos = await prisma.todo.findMany({
+    let todos = await prisma.todo.findMany({
       where: whereClause,
-      orderBy: { id: "asc" }, // Sorting by ID in ascending order
+      // orderBy: { todo: "asc" }, // Sorting by ID in ascending order
     });
+
+    todos.sort((a, b) => a.todo.localeCompare(b.todo));
 
     return handleSuccess(todos, "Get todo");
   } catch (error) {

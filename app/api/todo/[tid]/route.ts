@@ -23,6 +23,12 @@ export async function PUT(
       return handleValidationError("Request body is required");
     }
 
+    Object.keys(body).forEach((key) => {
+      if (typeof body[key] === "string") {
+        body[key] = body[key].trim();
+      }
+    });
+
     const updatedTodo = await prisma.todo.update({
       data: body,
       where: { id: parseInt(tid) },
@@ -60,7 +66,7 @@ export async function GET(
   }
 }
 
-/* api/todo/${ID} METHOD DELETE for delete TODO by ID in DB */
+/* api/todo/${ID} METHOD DELETE for delete TODO by ID in DB*/
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { tid: string } }
